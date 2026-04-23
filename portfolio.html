@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Eric Jin | Data & Analytics</title>
+<style>
+  :root {
+    --cream: #faf6f1;
+    --warm-white: #fff9f4;
+    --terracotta: #c4704f;
+    --terracotta-light: #e8927a;
+    --navy: #2c3e50;
+    --sand: #e8ddd0;
+    --text: #3a3028;
+    --muted: #7a6d63;
+    --card-bg: #ffffff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Georgia',serif; background:var(--cream); color:var(--text); }
+
+  /* NAV */
+  nav { position:fixed; top:0; width:100%; z-index:100; background:rgba(250,246,241,0.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--sand); padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+  .nav-logo-wrap { position:relative; display:flex; align-items:center; }
+  .nav-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; object-position:center 15%; border:2px solid var(--terracotta); cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; }
+  .nav-avatar:hover { transform:scale(1.08); box-shadow:0 2px 12px rgba(196,112,79,0.4); }
+  .nav-name { font-family:Georgia,serif; font-size:1rem; font-weight:bold; color:var(--terracotta); margin-left:0.6rem; letter-spacing:0.5px; }
+  .speech-bubble { position:absolute; top:52px; left:12px; background:white; border:1.5px solid var(--sand); border-radius:12px; padding:0.5rem 0.8rem; font-family:Arial,sans-serif; font-size:0.75rem; color:var(--navy); white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.1); transform-origin:top left; animation:bubblePop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.6s both; z-index:101; }
+  .speech-bubble::before { content:''; position:absolute; top:-8px; left:14px; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:8px solid var(--sand); }
+  .speech-bubble::after { content:''; position:absolute; top:-6px; left:15px; border-left:6px solid transparent; border-right:6px solid transparent; border-bottom:7px solid white; }
+  @keyframes bubblePop { 0%{opacity:0;transform:scale(0.4) translateY(-6px);} 100%{opacity:1;transform:scale(1) translateY(0);} }
+  .nav-links { display:flex; gap:2rem; list-style:none; }
+  .nav-links a { text-decoration:none; color:var(--navy); font-family:Arial,sans-serif; font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--terracotta); }
+
+  /* LIGHTBOX */
+  #lightbox { display:none; position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); align-items:center; justify-content:center; cursor:zoom-out; }
+  #lightbox.open { display:flex; }
+  #lightbox img { width:320px; height:320px; border-radius:50%; object-fit:cover; object-position:center 15%; border:5px solid white; box-shadow:0 8px 40px rgba(0,0,0,0.5); animation:popIn 0.25s ease; }
+  @keyframes popIn { from{transform:scale(0.7);opacity:0;} to{transform:scale(1);opacity:1;} }
+
+  /* HERO */
+  #hero { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:6rem 2rem 4rem; background:linear-gradient(135deg,var(--warm-white) 0%,var(--sand) 100%); text-align:center; position:relative; overflow:hidden; }
+  #chart-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .hero-content { position:relative; z-index:2; max-width:700px; }
+  .hero-tag { display:inline-block; background:var(--terracotta); color:white; padding:0.3rem 1rem; border-radius:20px; font-family:Arial,sans-serif; font-size:0.8rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:1.5rem; }
+  .hero-name { font-size:clamp(2.5rem,6vw,4rem); color:var(--navy); line-height:1.1; margin-bottom:1rem; }
+  .hero-name span { color:var(--terracotta); }
+  .hero-sub { font-size:1.15rem; color:var(--muted); line-height:1.7; margin-bottom:2rem; font-style:italic; }
+  .hero-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+  .btn-primary { background:var(--terracotta); color:white; padding:0.8rem 2rem; border-radius:4px; text-decoration:none; font-family:Arial,sans-serif; font-size:0.9rem; transition:background 0.2s,transform 0.2s; }
+  .btn-primary:hover { background:var(--terracotta-light); transform:translateY(-2px); }
+  .btn-outline { border:2px solid var(--navy); color:var(--navy); padding:0.8rem 2rem; border-radius:4px; text-decoration:none; font-family:Arial,sans-serif; font-size:0.9rem; transition:all 0.2s; }
+  .btn-outline:hover { background:var(--navy); color:white; transform:translateY(-2px); }
+
+  /* SECTIONS */
+  section { padding:5rem 2rem; }
+  .section-inner { max-width:900px; margin:0 auto; }
+  .section-label { font-family:Arial,sans-serif; font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; color:var(--terracotta); margin-bottom:0.5rem; }
+  .section-title { font-size:clamp(1.8rem,4vw,2.4rem); color:var(--navy); margin-bottom:1.5rem; }
+  .divider { width:50px; height:3px; background:var(--terracotta); margin-bottom:2rem; border-radius:2px; }
+
+  /* ABOUT */
+  #about { background:var(--warm-white); }
+  .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
+  .about-text p { color:var(--muted); line-height:1.9; margin-bottom:1rem; font-size:1rem; }
+  .about-highlights { display:flex; flex-direction:column; gap:1rem; }
+  .highlight-card { background:var(--cream); border-left:3px solid var(--terracotta); padding:1rem 1.2rem; border-radius:0 4px 4px 0; }
+  .highlight-card h4 { color:var(--navy); font-size:0.95rem; margin-bottom:0.3rem; }
+  .highlight-card p { color:var(--muted); font-size:0.85rem; font-family:Arial,sans-serif; }
+
+  /* PROJECTS */
+  #projects { background:var(--cream); }
+  .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.5rem; }
+  .project-card { background:var(--card-bg); border-radius:8px; padding:1.5rem; border:1px solid var(--sand); transition:transform 0.2s,box-shadow 0.2s; }
+  .project-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+  .project-icon { font-size:2rem; margin-bottom:1rem; }
+  .project-card h3 { color:var(--navy); font-size:1.05rem; margin-bottom:0.5rem; }
+  .project-card p { color:var(--muted); font-size:0.88rem; line-height:1.6; font-family:Arial,sans-serif; margin-bottom:1rem; }
+  .tags { display:flex; flex-wrap:wrap; gap:0.4rem; }
+  .tag { background:var(--sand); color:var(--navy); padding:0.2rem 0.6rem; border-radius:12px; font-size:0.72rem; font-family:Arial,sans-serif; }
+
+  /* SKILLS */
+  #skills { background:var(--warm-white); }
+  .skills-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; }
+  .skill-group h3 { color:var(--navy); font-size:1rem; margin-bottom:1rem; font-family:Arial,sans-serif; }
+  .skill-item { margin-bottom:0.8rem; }
+  .skill-name { display:flex; justify-content:space-between; font-family:Arial,sans-serif; font-size:0.82rem; color:var(--text); margin-bottom:0.3rem; }
+  .skill-bar { height:5px; background:var(--sand); border-radius:3px; overflow:hidden; }
+  .skill-fill { height:100%; background:linear-gradient(90deg,var(--terracotta),var(--terracotta-light)); border-radius:3px; }
+  .resume-cta { margin-top:2.5rem; text-align:center; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+
+  /* INTERESTS */
+  /* MUSIC MODAL */
+  /* TIMELINE */
+  #timeline { background:var(--cream); }
+  #tl-modal { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:1rem; }
+  #tl-modal.open { display:flex; }
+  .timeline-wrap { position:relative; padding-left:2rem; }
+  .timeline-wrap::before { content:''; position:absolute; left:7px; top:8px; bottom:8px; width:2px; background:linear-gradient(to bottom, var(--terracotta), var(--sand)); border-radius:2px; }
+  .tl-item { position:relative; margin-bottom:2rem; cursor:pointer; }
+  .tl-item:last-child { margin-bottom:0; }
+  .tl-dot { position:absolute; left:-2rem; top:1rem; width:16px; height:16px; border-radius:50%; z-index:1; transition:transform 0.2s; }
+  .tl-item:hover .tl-dot { transform:scale(1.3); }
+  .tl-date { font-family:Arial,sans-serif; font-size:0.72rem; color:var(--muted); letter-spacing:0.5px; margin-bottom:0.4rem; text-transform:uppercase; }
+  .tl-card { background:var(--card-bg); border:1px solid var(--sand); border-radius:8px; padding:1.1rem 1.3rem; transition:transform 0.2s, box-shadow 0.2s; }
+  .tl-item:hover .tl-card { transform:translateX(4px); box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+  .tl-tag { font-family:Arial,sans-serif; font-size:0.7rem; color:var(--muted); margin-bottom:0.35rem; }
+  .tl-card h3 { color:var(--navy); font-size:1rem; margin-bottom:0.4rem; }
+  .tl-card p { color:var(--muted); font-size:0.83rem; font-family:Arial,sans-serif; line-height:1.6; margin-bottom:0.6rem; }
+  .tl-read-more { font-family:Arial,sans-serif; font-size:0.75rem; color:var(--terracotta); font-weight:bold; }
+  .tl-detail-section { margin-bottom:1.2rem; }
+  .tl-detail-section h4 { color:var(--navy); font-size:0.9rem; margin-bottom:0.5rem; font-family:Arial,sans-serif; }
+  .tl-detail-section p { color:var(--muted); font-size:0.85rem; font-family:Arial,sans-serif; line-height:1.7; }
+  .tl-detail-section ul { padding-left:1.2rem; }
+  .tl-detail-section ul li { color:var(--muted); font-size:0.85rem; font-family:Arial,sans-serif; line-height:1.7; margin-bottom:0.3rem; }
+  .tl-badge-row { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem; }
+
+  #music-modal, #sports-modal, #books-modal, #tv-modal { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:1rem; }
+  #music-modal.open, #sports-modal.open, #books-modal.open, #tv-modal.open { display:flex; }
+  .music-modal-box { background:var(--warm-white); border-radius:12px; width:100%; max-width:780px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  .music-modal-header { padding:1.5rem 1.8rem 1rem; border-bottom:1px solid var(--sand); display:flex; justify-content:space-between; align-items:center; }
+  .music-modal-header h2 { color:var(--navy); font-size:1.4rem; }
+  .music-close-btn { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); line-height:1; padding:0.2rem 0.5rem; border-radius:4px; transition:background 0.2s; }
+  .music-close-btn:hover { background:var(--sand); }
+  .music-modal-body { padding:1.5rem 1.8rem; }
+  .music-section-label { font-family:Arial,sans-serif; font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:var(--terracotta); margin-bottom:0.6rem; margin-top:1.4rem; }
+  .music-section-label:first-child { margin-top:0; }
+  .music-links { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:0.5rem; }
+  .music-ext-link { display:flex; align-items:center; gap:0.7rem; background:var(--cream); border:1px solid var(--sand); border-radius:8px; padding:0.8rem 1rem; text-decoration:none; color:var(--navy); font-family:Arial,sans-serif; font-size:0.88rem; transition:transform 0.15s, box-shadow 0.15s; }
+  .music-ext-link:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.08); }
+  .music-ext-link span { color:var(--muted); font-size:0.78rem; margin-left:auto; }
+  .audio-list { display:flex; flex-direction:column; gap:0.8rem; }
+  .audio-item { background:var(--cream); border:1px solid var(--sand); border-radius:8px; padding:0.9rem 1rem; }
+  .audio-item-name { font-family:Arial,sans-serif; font-size:0.85rem; color:var(--navy); margin-bottom:0.5rem; font-weight:bold; }
+  .audio-item audio { width:100%; height:36px; accent-color:var(--terracotta); }
+  .audio-placeholder { font-family:Arial,sans-serif; font-size:0.8rem; color:var(--muted); font-style:italic; padding:0.5rem 0; }
+
+  .modal-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-top:0.5rem; }
+  .modal-item-card { background:var(--cream); border:1px solid var(--sand); border-radius:10px; padding:1.2rem 1rem; text-align:center; transition:transform 0.15s, box-shadow 0.15s; }
+  .modal-item-card:hover { transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+  .modal-item-icon { font-size:2rem; margin-bottom:0.6rem; }
+  .modal-item-card h4 { color:var(--navy); font-size:0.92rem; margin-bottom:0.3rem; }
+  .modal-item-card p { color:var(--muted); font-size:0.78rem; font-family:Arial,sans-serif; line-height:1.5; }
+  .modal-item-card .book-author { color:var(--terracotta); font-size:0.75rem; font-family:Arial,sans-serif; font-style:italic; margin-top:0.2rem; }
+
+  #interests { background:var(--cream); }
+  .interests-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
+  .interest-card { background:var(--card-bg); border-radius:8px; padding:1.5rem; text-align:center; border:1px solid var(--sand); transition:transform 0.2s; }
+  .interest-card:hover { transform:translateY(-3px); }
+  .interest-icon { font-size:2.2rem; margin-bottom:0.7rem; }
+  .interest-card h3 { color:var(--navy); font-size:0.95rem; margin-bottom:0.4rem; }
+  .interest-card p { color:var(--muted); font-size:0.8rem; font-family:Arial,sans-serif; line-height:1.5; }
+
+  /* ARTICLES — KANBAN */
+  #articles { background:var(--warm-white); }
+  .kanban-board { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; align-items:start; }
+  .kanban-card { background:var(--card-bg); border-radius:10px; border:1px solid var(--sand); overflow:hidden; transition:transform 0.2s, box-shadow 0.2s; display:flex; flex-direction:column; }
+  .kanban-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,0.09); }
+  .kanban-card-header { padding:1rem 1.2rem 0.8rem; border-bottom:1px solid var(--sand); }
+  .kanban-platform { font-family:Arial,sans-serif; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:0.4rem; }
+  .kanban-card-header h3 { color:var(--navy); font-size:0.95rem; line-height:1.4; }
+  .kanban-card-body { padding:1rem 1.2rem; flex:1; }
+  .kanban-card-body p { color:var(--muted); font-size:0.82rem; line-height:1.65; font-family:Arial,sans-serif; }
+  .kanban-card-footer { padding:0.8rem 1.2rem; border-top:1px solid var(--sand); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; }
+  .kanban-link { font-family:Arial,sans-serif; font-size:0.78rem; color:var(--terracotta); text-decoration:none; font-weight:bold; }
+  .kanban-link:hover { text-decoration:underline; }
+  .kanban-emoji { font-size:1.4rem; }
+  @media(max-width:680px) { .kanban-board { grid-template-columns:1fr; } }
+
+  /* CONTACT */
+  #contact { background:var(--navy); }
+  #contact .section-label { color:var(--terracotta-light); }
+  #contact .section-title { color:white; }
+  #contact .divider { background:var(--terracotta-light); }
+  .contact-sub { color:rgba(255,255,255,0.65); font-family:Arial,sans-serif; font-size:0.95rem; margin-bottom:2rem; line-height:1.7; }
+  .contact-links { display:flex; gap:1rem; flex-wrap:wrap; }
+  .contact-link { display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.1); color:white; padding:0.7rem 1.3rem; border-radius:4px; text-decoration:none; font-family:Arial,sans-serif; font-size:0.88rem; transition:background 0.2s; border:1px solid rgba(255,255,255,0.15); }
+  .contact-link:hover { background:rgba(255,255,255,0.2); }
+
+  footer { background:#1e2b38; color:rgba(255,255,255,0.4); text-align:center; padding:1.5rem; font-family:Arial,sans-serif; font-size:0.78rem; }
+  .fade-in { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease,transform 0.6s ease; }
+  .fade-in.visible { opacity:1; transform:translateY(0); }
+  @media(max-width:640px) { .about-grid{grid-template-columns:1fr;} .nav-links{gap:1rem;} }
+</style>
+</head>
+<body>
+
+<!-- LIGHTBOX -->
+<div id="lightbox"><img src="avatar.jpg" alt="Eric"/></div>
+
+<nav>
+  <div class="nav-logo-wrap">
+    <img src="avatar.jpg" alt="Eric" class="nav-avatar" id="nav-avatar"/>
+    <div class="speech-bubble" id="speech-bubble">Thanks for coming to my page, feel free to browse! 👋 <span id="bubble-close" style="margin-left:0.4rem;cursor:pointer;color:var(--muted);font-size:0.7rem;">✕</span></div>
+    <span class="nav-name">Eric Jin</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#timeline">Journey</a></li>
+    <li><a href="#interests">Interests</a></li>
+    <li><a href="#articles">Writing</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <canvas id="chart-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-tag">📊 Business Analyst</div>
+    <h1 class="hero-name">Hi, I'm <span>Eric</span></h1>
+    <p class="hero-sub">I bridge the gap between data and decisions — translating complex business problems into clear insights, actionable recommendations, and tools that stakeholders actually use.</p>
+    <div class="hero-btns">
+      <a href="#projects" class="btn-primary">See My Work</a>
+      <a href="#contact" class="btn-outline">Get in Touch</a>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-inner fade-in">
+    <div class="section-label">My Story</div>
+    <h2 class="section-title">A little about me</h2>
+    <div class="divider"></div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>I'm a Business Analyst with a background in Management Information Systems, currently working remotely from Taipei, Taiwan. My work sits at the intersection of business strategy, process improvement, and data-driven decision making.</p>
+        <p>Day to day, I collaborate with stakeholders to understand business needs, translate them into analytical solutions, and communicate findings through dashboards and reports that drive real decisions. I care about making complexity approachable — whether that's for a client, a team lead, or an executive.</p>
+        <p>I've worked across industries — insurance brokerage, digital marketing, and finance — which has given me a broad lens on how organizations operate and where data can create the most impact. I'm always looking for the next problem worth solving.</p>
+      </div>
+      <div class="about-highlights">
+        <div class="highlight-card"><h4>📍 Based in Taipei, Taiwan</h4><p>Working remotely for a US employer, holding a Taiwan Gold Card for long-term residence.</p></div>
+        <div class="highlight-card"><h4>🎓 MIS Background</h4><p>BBA in Management Information Systems — trained to connect technology with business outcomes.</p></div>
+        <div class="highlight-card"><h4>🤝 Stakeholder-First Mindset</h4><p>I translate technical findings into clear narratives that help non-technical stakeholders make confident decisions.</p></div>
+        <div class="highlight-card"><h4>🌱 Always Growing</h4><p>Expanding into product thinking, Agile delivery, and analytics engineering to broaden my BA toolkit.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="section-inner fade-in">
+    <div class="section-label">Portfolio</div>
+    <h2 class="section-title">Projects I'm proud of</h2>
+    <div class="divider"></div>
+    <div class="projects-grid">
+      <div class="project-card">
+        <div class="project-icon">🗺️</div>
+        <h3>US Insurance Peril Risk Heat Map</h3>
+        <p>An interactive heat map visualizing risk exposure across major US insurance perils — named windstorm, earthquake, wildfire, flood, and severe convective storm — built for client-facing presentations.</p>
+        <div class="tags" style="margin-bottom:1rem;"><span class="tag">D3.js</span><span class="tag">TopoJSON</span><span class="tag">JavaScript</span><span class="tag">Insurance</span></div>
+        <a href="us_peril_heatmap.html" target="_blank" style="font-family:Arial,sans-serif;font-size:0.8rem;color:var(--terracotta);text-decoration:none;font-weight:bold;">🌐 View Live Map →</a>
+      </div>
+      <div class="project-card">
+        <div class="project-icon">📊</div>
+        <h3>Insurance Coverage Analytics Dashboard</h3>
+        <p>Power BI dashboards supporting client decisions around property insurance coverage structures, including BI coverage, deductible analysis, and layered program mechanics.</p>
+        <div class="tags"><span class="tag">Power BI</span><span class="tag">SQL</span><span class="tag">DAX</span><span class="tag">Property Risk</span></div>
+      </div>
+      <div class="project-card">
+        <div class="project-icon">⚡</div>
+        <h3>Property Risk SQL Pipeline</h3>
+        <p>End-to-end SQL workflows for ingesting, cleaning, and aggregating commercial property data to support underwriting and loss modeling workflows.</p>
+        <div class="tags"><span class="tag">SQL</span><span class="tag">ETL</span><span class="tag">Data Modeling</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="section-inner fade-in">
+    <div class="section-label">Resume</div>
+    <h2 class="section-title">Skills & Expertise</h2>
+    <div class="divider"></div>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <h3>Business Analysis</h3>
+        <div class="skill-item"><div class="skill-name"><span>Requirements Gathering</span><span>Proficient</span></div><div class="skill-bar"><div class="skill-fill" style="width:75%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>Stakeholder Communication</span><span>Advanced</span></div><div class="skill-bar"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>Agile / Scrum</span><span>Familiar</span></div><div class="skill-bar"><div class="skill-fill" style="width:45%"></div></div></div>
+      </div>
+      <div class="skill-group">
+        <h3>Data & Reporting</h3>
+        <div class="skill-item"><div class="skill-name"><span>SQL</span><span>Advanced</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>Power BI</span><span>Advanced*</span></div><div class="skill-bar"><div class="skill-fill" style="width:80%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>DAX</span><span>Learning</span></div><div class="skill-bar"><div class="skill-fill" style="width:35%"></div></div></div>
+      </div>
+      <div class="skill-group">
+        <h3>Domain & Technical</h3>
+        <div class="skill-item"><div class="skill-name"><span>Digital Mktg. Analytics</span><span>Expert</span></div><div class="skill-bar"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>Python</span><span>Proficient</span></div><div class="skill-bar"><div class="skill-fill" style="width:65%"></div></div></div>
+        <div class="skill-item"><div class="skill-name"><span>JavaScript</span><span>Learning</span></div><div class="skill-bar"><div class="skill-fill" style="width:30%"></div></div></div>
+      </div>
+    </div>
+    <div class="resume-cta">
+      <a href="Eric_Jin_Resume.pdf" target="_blank" class="btn-primary">📄 View Resume</a>
+      <a href="Eric_Jin_Resume.pdf" download="Eric_Jin_Resume.pdf" class="btn-outline">⬇️ Download</a>
+    </div>
+
+      <p style="font-family:Arial,sans-serif;font-size:0.75rem;color:var(--muted);margin-top:1rem;font-style:italic;">* PL-300 certification in progress</p>
+    </div>
+    <div style="margin-top:3rem;">
+      <div class="section-label">Learning Notes</div>
+      <h3 style="color:var(--navy);font-size:1.1rem;margin-bottom:0.5rem;">Study Notebooks</h3>
+      <p style="color:var(--muted);font-family:Arial,sans-serif;font-size:0.88rem;margin-bottom:1.2rem;line-height:1.7;">Self-directed deep dives into the technical skills underpinning my analytics work — documented in Google Colab for anyone to explore.</p>
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-icon">🐍</div>
+          <h3>Python Mastery</h3>
+          <p>Comprehensive self-study notes covering Python fundamentals through advanced patterns — data structures, functions, libraries, and hands-on exercises built from the ground up.</p>
+          <div class="tags" style="margin-bottom:1rem;"><span class="tag">Python</span><span class="tag">NumPy</span><span class="tag">Pandas</span></div>
+          <a href="https://colab.research.google.com/drive/1Z3_MkeXKlrgJRC6ybKxUU7OJLJeGz_lp?usp=sharing" target="_blank" style="font-family:Arial,sans-serif;font-size:0.8rem;color:var(--terracotta);text-decoration:none;font-weight:bold;">📓 Open in Colab →</a>
+        </div>
+        <div class="project-card">
+          <div class="project-icon">📊</div>
+          <h3>Statistical Machine Learning</h3>
+          <p>In-depth notes on statistical learning theory and applied ML — covering regression, classification, model evaluation, and the math behind the methods used in modern data science.</p>
+          <div class="tags" style="margin-bottom:1rem;"><span class="tag">ML</span><span class="tag">Statistics</span><span class="tag">Scikit-learn</span></div>
+          <a href="https://colab.research.google.com/drive/11TgLi4PJ9k3IYL_OyBn6r3D24S_8dc8g?usp=sharing" target="_blank" style="font-family:Arial,sans-serif;font-size:0.8rem;color:var(--terracotta);text-decoration:none;font-weight:bold;">📓 Open in Colab →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="interests">
+  <div class="section-inner fade-in">
+    <div class="section-label">Beyond Work</div>
+    <h2 class="section-title">What makes me, me</h2>
+    <div class="divider"></div>
+    <div class="interests-grid">
+      <div class="interest-card" style="cursor:pointer;" onclick="document.getElementById('music-modal').classList.add('open')">
+        <div class="interest-icon">🎵</div>
+        <h3>Music</h3>
+        <p>Sheet music, compositions & original recordings. Click to explore.</p>
+      </div>
+      <div class="interest-card" style="cursor:pointer;" onclick="document.getElementById('sports-modal').classList.add('open')">
+        <div class="interest-icon">🏃</div>
+        <h3>Sports</h3>
+        <p>Tennis, rock climbing, running — always moving. Click to see more.</p>
+      </div>
+      <div class="interest-card" style="cursor:pointer;" onclick="document.getElementById('books-modal').classList.add('open')">
+        <div class="interest-icon">📚</div>
+        <h3>Favorite Books</h3>
+        <p>A mix of philosophy, self-improvement, and adventure. Click to explore.</p>
+      </div>
+      <div class="interest-card" style="cursor:pointer;" onclick="document.getElementById('tv-modal').classList.add('open')">
+        <div class="interest-icon">🎬</div>
+        <h3>TV & Movies</h3>
+        <p>From mind-bending cinema to animated masterpieces. Click to see my picks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPORTS MODAL -->
+<div id="sports-modal">
+  <div class="music-modal-box">
+    <div class="music-modal-header">
+      <h2>🏃 Sports</h2>
+      <button class="music-close-btn" onclick="document.getElementById('sports-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="music-modal-body">
+      <div class="music-section-label">Active Pursuits</div>
+      <div class="modal-grid">
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🎾</div>
+          <h4>Tennis</h4>
+          <p>Fast reflexes, strategic play, and a solid backhand in the making.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🧗</div>
+          <h4>Rock Climbing</h4>
+          <p>Problem-solving meets physical endurance — every wall is a puzzle.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🏃</div>
+          <h4>Running</h4>
+          <p>Clearing the mind, one kilometer at a time through Taipei's streets.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKS MODAL -->
+<div id="books-modal">
+  <div class="music-modal-box">
+    <div class="music-modal-header">
+      <h2>📚 Favorite Books</h2>
+      <button class="music-close-btn" onclick="document.getElementById('books-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="music-modal-body">
+      <div class="music-section-label">Books That Shaped Me</div>
+      <div class="modal-grid">
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🌸</div>
+          <h4>Ikigai</h4>
+          <div class="book-author">Héctor García & Francesc Miralles</div>
+          <p>The Japanese concept of finding your reason to wake up every morning.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🤷</div>
+          <h4>The Subtle Art of Not Giving A F*ck</h4>
+          <div class="book-author">Mark Manson</div>
+          <p>A counterintuitive guide to living a good life by caring about less.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🤝</div>
+          <h4>How to Win Friends & Influence People</h4>
+          <div class="book-author">Dale Carnegie</div>
+          <p>Timeless principles on connection, empathy, and human relationships.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">⚡</div>
+          <h4>Percy Jackson Series</h4>
+          <div class="book-author">Rick Riordan</div>
+          <p>Greek mythology, adventure, and the magic of a good story — never gets old.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TV MODAL -->
+<div id="tv-modal">
+  <div class="music-modal-box">
+    <div class="music-modal-header">
+      <h2>🎬 TV Series & Movies</h2>
+      <button class="music-close-btn" onclick="document.getElementById('tv-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="music-modal-body">
+      <div class="music-section-label">Favorites of All Time</div>
+      <div class="modal-grid">
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🌀</div>
+          <h4>Inception</h4>
+          <p>Dreams within dreams — a masterclass in storytelling and visual imagination.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">⚔️</div>
+          <h4>Arcane</h4>
+          <p>Stunning animation, complex characters, and one of the best TV scores ever made.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🕷️</div>
+          <h4>Into the Spider-Verse</h4>
+          <p>Redefined what animation could be. Every frame is a painting.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🕰️</div>
+          <h4>Loki</h4>
+          <p>Time, identity, and chaos — with Tom Hiddleston at his absolute best.</p>
+        </div>
+        <div class="modal-item-card">
+          <div class="modal-item-icon">🌊</div>
+          <h4>Jujutsu Kaisen</h4>
+          <p>Breathtaking fight sequences, deep lore, and characters you genuinely care about.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC MODAL -->
+<div id="music-modal">
+  <div class="music-modal-box">
+    <div class="music-modal-header">
+      <h2>🎵 Eric's Music</h2>
+      <button class="music-close-btn" onclick="document.getElementById('music-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="music-modal-body">
+
+      <div class="music-section-label">📄 Sheet Music & Scores</div>
+      <div class="music-links">
+        <a href="https://musescore.com/sheetmusic?text=ericjin199" target="_blank" class="music-ext-link">
+          🎼 All Sheet Music by Eric Jin
+          <span>MuseScore →</span>
+        </a>
+        <a href="https://musescore.com/user/22356031/scores/11767096" target="_blank" class="music-ext-link">
+          🎹 Featured Score
+          <span>MuseScore →</span>
+        </a>
+      </div>
+
+      <div class="music-section-label">🎧 Original Recordings</div>
+      <div class="audio-list" id="audio-list">
+        <p class="audio-placeholder">Add your .wav files to your portfolio folder and update the filenames below to hear them here.</p>
+        
+        <div class="audio-item">
+          <div class="audio-item-name">Rock Instrumental</div>
+          <audio controls src="song1.mp3"></audio>
+        </div>
+        <div class="audio-item">
+          <div class="audio-item-name">Random Idea w/ Vocals</div>
+          <audio controls src="song2.mp3"></audio>
+        </div>
+        <div class="audio-item">
+          <div class="audio-item-name">First Set - Beat</div>
+          <audio controls src="song3.mp3"></audio>
+        </div>
+       
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<section id="timeline">
+  <div class="section-inner fade-in">
+    <div class="section-label">My Journey</div>
+    <h2 class="section-title">Experience & Milestones</h2>
+    <div class="divider"></div>
+    <div class="timeline-wrap">
+
+      <div class="tl-item" onclick="openTL('lockton')">
+        <div class="tl-dot" style="background:#c4704f;box-shadow:0 0 0 4px rgba(196,112,79,0.2)"></div>
+        <div class="tl-date">Feb 2022 – Present</div>
+        <div class="tl-card">
+          <div class="tl-tag">💼 Full-Time</div>
+          <h3>Business Analyst — Lockton</h3>
+          <p>Insurance brokerage analytics — Power BI, SQL, and risk modeling for client coverage decisions.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('ut')">
+        <div class="tl-dot" style="background:#2c3e50;box-shadow:0 0 0 4px rgba(44,62,80,0.2)"></div>
+        <div class="tl-date">2017 – 2021</div>
+        <div class="tl-card">
+          <div class="tl-tag">🎓 Education</div>
+          <h3>BBA, Management Information Systems — UT Austin</h3>
+          <p>3.83 GPA. Built web apps, ML models, and client-facing systems using Agile methodology.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('honest')">
+        <div class="tl-dot" style="background:#e8927a;box-shadow:0 0 0 4px rgba(232,146,122,0.2)"></div>
+        <div class="tl-date">Jan 2016 – Feb 2020</div>
+        <div class="tl-card">
+          <div class="tl-tag">📈 Full-Time</div>
+          <h3>Marketing Specialist — Honest Advertisements LLC</h3>
+          <p>Managed $5M in annual revenue through data-driven digital ad strategy across 100+ funnels.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('westlake')">
+        <div class="tl-dot" style="background:#3d5166;box-shadow:0 0 0 4px rgba(61,81,102,0.2)"></div>
+        <div class="tl-date">Jun – Aug 2020</div>
+        <div class="tl-card">
+          <div class="tl-tag">🏦 Internship</div>
+          <h3>Investment Banking Analyst — Westlake Securities</h3>
+          <p>Supported M&A due diligence, equity research, and financial analysis.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('pe')">
+        <div class="tl-dot" style="background:#3d5166;box-shadow:0 0 0 4px rgba(61,81,102,0.2)"></div>
+        <div class="tl-date">Jun – Aug 2020</div>
+        <div class="tl-card">
+          <div class="tl-tag">💰 Internship</div>
+          <h3>Private Equity Intern — Principal Investments</h3>
+          <p>Drafted investment materials and evaluated opportunities in the private equity space.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('ecommerce')">
+        <div class="tl-dot" style="background:#c4704f;box-shadow:0 0 0 4px rgba(196,112,79,0.2)"></div>
+        <div class="tl-date">Dec 2018 – Jan 2019</div>
+        <div class="tl-card">
+          <div class="tl-tag">🛒 Personal Project</div>
+          <h3>E-Commerce Store</h3>
+          <p>Launched a niche store generating $6,000 revenue on under $500 in ad spend.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+      <div class="tl-item" onclick="openTL('crypto')">
+        <div class="tl-dot" style="background:#e8927a;box-shadow:0 0 0 4px rgba(232,146,122,0.2)"></div>
+        <div class="tl-date">Dec 2020 – Aug 2021</div>
+        <div class="tl-card">
+          <div class="tl-tag">🤖 Personal Project</div>
+          <h3>Crypto Trading Bot</h3>
+          <p>Developed and tested 10+ algorithmic trading strategies using TradingView.</p>
+          <span class="tl-read-more">Click to read more →</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE MODALS -->
+<div id="tl-modal">
+  <div class="music-modal-box" style="max-width:620px;">
+    <div class="music-modal-header">
+      <h2 id="tl-modal-title"></h2>
+      <button class="music-close-btn" onclick="document.getElementById('tl-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="music-modal-body" id="tl-modal-body"></div>
+  </div>
+</div>
+
+<!-- ARTICLES -->
+<section id="articles">
+  <div class="section-inner fade-in">
+    <div class="section-label">Writing</div>
+    <h2 class="section-title">Articles & Published Work</h2>
+    <div class="divider"></div>
+    <div class="kanban-board">
+
+      <div class="kanban-card">
+        <div class="kanban-card-header">
+          <div class="kanban-platform">📊 Tableau · Data Visualization</div>
+          <h3>COVID-19 Data Exploration</h3>
+        </div>
+        <div class="kanban-card-body">
+          <p>A deep dive into global pandemic data — tracking case growth, mortality, and vaccination rollout across countries. Built to practice translating messy public health data into clean, compelling visual narratives using Tableau.</p>
+        </div>
+        <div class="kanban-card-footer">
+          <div class="tags"><span class="tag">Tableau</span><span class="tag">Public Health</span></div>
+          <a href="https://public.tableau.com/app/profile/eric.jin/viz/CovidExploration_16739154374920/Dashboard1" target="_blank" class="kanban-link">View Dashboard →</a>
+        </div>
+      </div>
+
+      <div class="kanban-card">
+        <div class="kanban-card-header">
+          <div class="kanban-platform">🎮 Medium · Product Management</div>
+          <h3>Smash Bros. Feature Recommendation</h3>
+        </div>
+        <div class="kanban-card-body">
+          <p>A product thinking exercise applying real PM frameworks to Super Smash Bros. Ultimate. Eric identifies a competitive player pain point, maps out edge cases, runs an impact vs. effort analysis — and ultimately recommends icing the feature. Rigorous and fun.</p>
+        </div>
+        <div class="kanban-card-footer">
+          <div class="tags"><span class="tag">PM</span><span class="tag">Case Study</span></div>
+          <a href="https://medium.com/@sgravle/super-smash-bros-ultimate-feature-recommendation-case-study-dc800edccdff" target="_blank" class="kanban-link">Read on Medium →</a>
+        </div>
+      </div>
+
+      <div class="kanban-card">
+        <div class="kanban-card-header">
+          <div class="kanban-platform">🧠 Medium · Self-Improvement</div>
+          <h3>How to Feel Happy All the Time</h3>
+        </div>
+        <div class="kanban-card-body">
+          <p>A science-meets-philosophy guide to lasting happiness. Covers circadian rhythm science, the role of cognitions in mental health, and a personal "happy mindset" framework — drawing from Huberman, Stoicism, and the Japanese concept of Ikigai.</p>
+        </div>
+        <div class="kanban-card-footer">
+          <div class="tags"><span class="tag">Psychology</span><span class="tag">Wellness</span></div>
+          <a href="https://medium.com/@sgravle/how-to-feel-happy-all-the-time-5aff06b9f5d1" target="_blank" class="kanban-link">Read on Medium →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="section-inner fade-in">
+    <div class="section-label">Get In Touch</div>
+    <h2 class="section-title">Let's connect</h2>
+    <div class="divider"></div>
+    <p class="contact-sub">I'm open to Business Analyst opportunities where I can help teams bridge the gap between data and decisions. Remote-first and US-time-zone friendly — let's talk.</p>
+    <div class="contact-links">
+      <a href="mailto:ericjin199@gmail.com" class="contact-link">✉️ Email Me</a>
+      <a href="https://linkedin.com" target="_blank" class="contact-link">💼 LinkedIn</a>
+      <a href="https://github.com/erillman" target="_blank" class="contact-link">🐙 GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer><p>© 2026 Eric Jin. Built with care in Taipei, Taiwan 🇹🇼</p></footer>
+
+<script>
+// TIMELINE MODAL DATA
+const tlData = {
+  lockton: {
+    title: '💼 Lockton — Business Analyst',
+    body: `
+      <div class="tl-detail-section">
+        <h4>📍 Houston, TX &nbsp;·&nbsp; Feb 2022 – Present</h4>
+        <p>Lockton is the world's largest privately held insurance brokerage. As a Business Analyst, I act as the bridge between client business needs and data-driven solutions — gathering requirements, building reporting tools, and translating complex findings into recommendations stakeholders can act on.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>Business Impact</h4>
+        <ul>
+          <li>Collaborated with internal stakeholders to define reporting requirements and deliver Power BI dashboards that improved visibility into risk outcomes</li>
+          <li>Translated complex valuation data into clear, non-technical recommendations that guided client coverage strategy discussions</li>
+          <li>Wrote SQL queries to extract and structure large datasets, enabling faster and more accurate business reporting</li>
+          <li>Contributed to internal tool development by aligning data requirements with user workflows and business objectives</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I've Learned</h4>
+        <p>This role sharpened my ability to listen to what stakeholders actually need — not just what they ask for — and to turn ambiguous business questions into structured analytical solutions. I've learned that the most valuable skill a BA can have is knowing how to communicate findings in a way that drives action.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Power BI</span><span class="tag">SQL</span><span class="tag">Stakeholder Management</span><span class="tag">Requirements Gathering</span><span class="tag">Reporting</span></div>`
+  },
+  ut: {
+    title: '🎓 UT Austin — BBA, Management Information Systems',
+    body: `
+      <div style="background:linear-gradient(135deg,#bf5700 0%,#333f48 100%);border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+        <img src="graduation.jpg" alt="Eric's UT Graduation" style="width:110px;height:140px;object-fit:cover;object-position:center top;border-radius:8px;border:3px solid rgba(255,255,255,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.4);flex-shrink:0;"/>
+        <div>
+          <div style="font-family:Arial,sans-serif;font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.6);margin-bottom:0.3rem;">The University of Texas at Austin</div>
+          <div style="font-family:Georgia,serif;font-size:1.15rem;color:white;font-weight:bold;margin-bottom:0.2rem;">BBA — Management Information Systems</div>
+          <div style="font-family:Arial,sans-serif;font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:0.5rem;">Graduated Fall 2021 &nbsp;·&nbsp; GPA: 3.83 / 4.0</div>
+          <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:20px;padding:0.25rem 0.8rem;font-family:Arial,sans-serif;font-size:0.72rem;color:white;letter-spacing:0.5px;">🤘 Hook 'Em Horns</div>
+        </div>
+      </div>
+      <div class="tl-detail-section">
+        <h4>Key Projects</h4>
+        <ul>
+          <li><strong>MIS 374 Client Project (Agile):</strong> Led a cross-functional team using Agile to deliver a web-based solution for Slayden Grubert Beard LLC. Managed sprints, gathered client requirements, and presented a working Bubble.io prototype that addressed real operational inefficiencies.</li>
+          <li><strong>MIS 333K Capstone — Bevo's Bookstore:</strong> Designed and built a full-stack C# ASP.NET MVC web application with SQL Server on Azure — including user flow wireframes and data models.</li>
+          <li><strong>MIS 373 ML Project:</strong> Scraped Yelp reviews, ran Python sentiment analysis, and calculated lift scores to generate product recommendations.</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Took Away</h4>
+        <p>UT gave me a foundation in how to scope problems, collaborate across functions, and deliver working solutions under real deadlines. The Agile client project was formative — I learned how to manage stakeholder expectations, adapt to changing requirements, and communicate progress clearly throughout a project lifecycle.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Agile / Scrum</span><span class="tag">Requirements Gathering</span><span class="tag">C# / ASP.NET</span><span class="tag">SQL</span><span class="tag">Python</span><span class="tag">Wireframing</span></div>`
+  },
+  honest: {
+    title: '📈 Honest Advertisements — Marketing Specialist',
+    body: `
+      <div class="tl-detail-section">
+        <h4>📍 Sugarland, TX &nbsp;·&nbsp; Jan 2016 – Feb 2020</h4>
+        <p>A lead generation company where I owned digital advertising operations end-to-end. This role was fundamentally a business analysis function — identifying what was working, understanding user behavior through data, and making decisions that maximized business outcomes across dozens of stakeholder brand partnerships.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>Business Impact</h4>
+        <ul>
+          <li>Managed operations generating <strong>$5M in annual revenue</strong> and $1.5M in profit</li>
+          <li>Analyzed funnel performance data across <strong>100+ campaigns</strong> to identify drop-off points and optimization opportunities</li>
+          <li>Partnered with 30+ brands as an internal consultant — gathering their objectives, translating them into campaign strategies, and reporting on outcomes</li>
+          <li>Used A/B testing and user research to drive continuous improvement across ad creatives and landing page flows</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Learned</h4>
+        <p>This was where I developed my data-driven decision-making instincts. Managing this scale of operations taught me to prioritize ruthlessly, communicate performance clearly to non-technical partners, and treat every business problem as a hypothesis worth testing.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Business Analysis</span><span class="tag">A/B Testing</span><span class="tag">Funnel Analytics</span><span class="tag">Stakeholder Reporting</span><span class="tag">Process Optimization</span></div>`
+  },
+  westlake: {
+    title: '🏦 Westlake Securities — Investment Banking Analyst',
+    body: `
+      <div class="tl-detail-section">
+        <h4>📍 Austin, TX &nbsp;·&nbsp; Jun – Aug 2020</h4>
+        <p>A summer internship that gave me exposure to how financial institutions evaluate business decisions — from M&A targets to market positioning — using structured analytical frameworks.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Did</h4>
+        <ul>
+          <li>Supported due diligence for M&A transactions — researching, synthesizing, and presenting findings to senior analysts</li>
+          <li>Conducted equity research and contributed to financial analysis materials used in deal evaluation</li>
+          <li>Developed skills in structuring complex information clearly for decision-makers</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Took Away</h4>
+        <p>This experience strengthened my ability to work with ambiguous information under pressure and present structured findings to senior stakeholders — skills that translate directly into strong business analysis work.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Due Diligence</span><span class="tag">Equity Research</span><span class="tag">Financial Analysis</span><span class="tag">Stakeholder Presentations</span></div>`
+  },
+  pe: {
+    title: '💰 Principal Investments — Private Equity Intern',
+    body: `
+      <div class="tl-detail-section">
+        <h4>📍 Dallas, TX &nbsp;·&nbsp; Jun – Aug 2020</h4>
+        <p>Worked with a private equity firm evaluating investment opportunities and drafting materials that helped decision-makers assess risk and return — a process very similar to the requirements and recommendations workflow of a BA.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Did</h4>
+        <ul>
+          <li>Drafted discussion materials and financial reports used in investment presentations</li>
+          <li>Assisted in evaluating potential investment opportunities across sectors</li>
+          <li>Synthesized complex financial data into clear narratives for internal stakeholders</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Took Away</h4>
+        <p>Translating dense financial data into a clear story for decision-makers — that's a core BA skill. This internship reinforced my belief that good analysis is only as valuable as the clarity with which it's communicated.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Private Equity</span><span class="tag">Financial Reporting</span><span class="tag">Data Synthesis</span><span class="tag">Stakeholder Communication</span></div>`
+  },
+  ecommerce: {
+    title: '🛒 E-Commerce Store — Personal Project',
+    body: `
+      <div class="tl-detail-section">
+        <h4>Dec 2018 – Jan 2019</h4>
+        <p>A lean, end-to-end entrepreneurial project — I identified a market opportunity, built the solution, and used data to grow it to $6,000 in revenue on under $500 in ad spend.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Did</h4>
+        <ul>
+          <li>Conducted market and product research to identify a viable niche</li>
+          <li>Built and managed the storefront, handling product selection and fulfillment</li>
+          <li>Ran paid social campaigns on Instagram and Facebook, optimizing based on performance data</li>
+          <li>Managed the full customer lifecycle — acquisition, experience, and retention</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Learned</h4>
+        <p>Running a business solo, even briefly, gives you a full-stack view of how decisions ripple through an organization. I learned to prioritize what moves the needle, measure everything, and move fast when the data tells you to.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Market Research</span><span class="tag">Performance Analytics</span><span class="tag">Process Ownership</span><span class="tag">12x ROAS</span></div>`
+  },
+  crypto: {
+    title: '🤖 Crypto Trading Bot — Personal Project',
+    body: `
+      <div class="tl-detail-section">
+        <h4>Dec 2020 – Aug 2021</h4>
+        <p>A self-directed analytical project — I applied structured hypothesis testing and KPI-driven iteration to build and evaluate algorithmic trading strategies in volatile crypto markets.</p>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Did</h4>
+        <ul>
+          <li>Defined success metrics and KPIs before building each strategy — a habits-first approach to analysis</li>
+          <li>Developed and backtested 10+ strategies using TradingView's Pine Script</li>
+          <li>Iterated rapidly based on results, applying the same test-and-learn mindset used in business analysis</li>
+        </ul>
+      </div>
+      <div class="tl-detail-section">
+        <h4>What I Learned</h4>
+        <p>The returns were modest, but the discipline of defining metrics before acting, testing rigorously, and separating emotion from data — that's a muscle I use every day as an analyst.</p>
+      </div>
+      <div class="tl-badge-row"><span class="tag">Hypothesis Testing</span><span class="tag">KPI Definition</span><span class="tag">Backtesting</span><span class="tag">Iterative Analysis</span></div>`
+  }
+};
+
+function openTL(key) {
+  const d = tlData[key];
+  document.getElementById('tl-modal-title').innerHTML = d.title;
+  document.getElementById('tl-modal-body').innerHTML = d.body;
+  document.getElementById('tl-modal').classList.add('open');
+}
+document.getElementById('tl-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// BUBBLE CLOSE
+document.getElementById('bubble-close').addEventListener('click', () => {
+  const b = document.getElementById('speech-bubble');
+  b.style.transition = 'opacity 0.2s, transform 0.2s';
+  b.style.opacity = '0'; b.style.transform = 'scale(0.8)';
+  setTimeout(() => b.style.display = 'none', 200);
+});
+
+// LIGHTBOX
+document.getElementById('nav-avatar').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.add('open');
+});
+document.getElementById('lightbox').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.remove('open');
+});
+
+// PARALLAX CHARTS
+const canvas = document.getElementById('chart-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, mouse = {x:0,y:0}, scrollY = 0;
+function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+resize();
+window.addEventListener('resize', () => { resize(); buildCharts(); });
+document.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
+window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+const TC = 'rgba(196,112,79,', NAV = 'rgba(44,62,80,';
+const charts = [];
+
+function buildCharts() {
+  charts.length = 0;
+  const defs = [
+    { rx:0.05, ry:0.08, rw:0.18, rh:0.28, depth:0.04, draw(cx,cy,w,h){ barChart(cx,cy,w,h,'Awesomeness by Day',['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],[72,68,85,91,99,100,88],TC); } },
+    { rx:0.75, ry:0.06, rw:0.20, rh:0.26, depth:0.06, draw(cx,cy,w,h){ lineChart(cx,cy,w,h,'Coolness Over Time',['2018','2019','2020','2021','2022','2023','2024','2025'],[55,62,70,74,82,91,97,100],NAV); } },
+    { rx:0.38, ry:0.04, rw:0.16, rh:0.28, depth:0.02, draw(cx,cy,w,h){ donutChart(cx,cy,w,h,'What Eric Runs On',['Coffee','Curiosity','Music','Spite'],[40,30,20,10],[TC+'1)',NAV+'1)','rgba(196,160,120,1)','rgba(232,146,122,1)']); } },
+    { rx:0.60, ry:0.60, rw:0.18, rh:0.26, depth:0.05, draw(cx,cy,w,h){ barChart(cx,cy,w,h,'Compliments / Month',['Jan','Feb','Mar','Apr','May','Jun'],[14,19,22,31,28,40],NAV); } },
+    { rx:0.05, ry:0.60, rw:0.20, rh:0.26, depth:0.07, draw(cx,cy,w,h){ lineChart(cx,cy,w,h,'SQL Queries Written',['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8'],[120,310,580,900,1200,1650,2100,2800],TC); } },
+    { rx:0.78, ry:0.58, rw:0.16, rh:0.28, depth:0.03, draw(cx,cy,w,h){ donutChart(cx,cy,w,h,'Side Project Hours',['Music','Coding','Research','Staring at Sky'],[35,30,25,10],[TC+'1)',NAV+'1)','rgba(200,170,140,1)','rgba(160,120,90,1)']); } },
+    { rx:0.38, ry:0.66, rw:0.18, rh:0.22, depth:0.04, draw(cx,cy,w,h){ barChart(cx,cy,w,h,'Meetings → Emails',['Jan','Feb','Mar','Apr','May'],[8,12,7,15,11],'rgba(160,100,70,'); } },
+  ];
+  defs.forEach(d => { charts.push({ bx:d.rx*W, by:d.ry*H, w:d.rw*W, h:d.rh*H, depth:d.depth, draw:d.draw }); });
+}
+buildCharts();
+
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r); ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r); ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.closePath(); }
+
+function chartFrame(cx,cy,w,h,title){ ctx.save(); ctx.shadowColor='rgba(0,0,0,0.08)'; ctx.shadowBlur=12; ctx.fillStyle='rgba(255,252,248,0.82)'; roundRect(cx,cy,w,h,6); ctx.fill(); ctx.restore(); ctx.strokeStyle='rgba(232,221,208,0.9)'; ctx.lineWidth=1; roundRect(cx,cy,w,h,6); ctx.stroke(); ctx.fillStyle='rgba(44,62,80,0.7)'; ctx.font=`bold ${Math.max(8,w*0.072)}px Arial`; ctx.textAlign='center'; ctx.fillText(title,cx+w/2,cy+w*0.085); }
+
+function barChart(cx,cy,w,h,title,labels,vals,colorPfx){ chartFrame(cx,cy,w,h,title); const pad=w*0.08,top=cy+h*0.22,bot=cy+h*0.88,aH=bot-top,n=vals.length,bW=(w-pad*2)/n*0.6,gap=(w-pad*2)/n,mx=Math.max(...vals); vals.forEach((v,i)=>{ const bH=(v/mx)*aH,bx=cx+pad+i*gap+gap*0.2,by=bot-bH; ctx.fillStyle=colorPfx+'0.55)'; ctx.fillRect(bx,by,bW,bH); ctx.fillStyle='rgba(80,60,50,0.5)'; ctx.font=`${Math.max(6,w*0.055)}px Arial`; ctx.textAlign='center'; ctx.fillText(labels[i],bx+bW/2,bot+h*0.055); }); }
+
+function lineChart(cx,cy,w,h,title,labels,vals,colorPfx){ chartFrame(cx,cy,w,h,title); const pad=w*0.1,top=cy+h*0.22,bot=cy+h*0.85,aW=w-pad*2,aH=bot-top,n=vals.length,mx=Math.max(...vals),mn=Math.min(...vals); const pts=vals.map((v,i)=>({x:cx+pad+(i/(n-1))*aW,y:bot-((v-mn)/(mx-mn||1))*aH})); ctx.beginPath(); ctx.moveTo(pts[0].x,bot); pts.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.lineTo(pts[pts.length-1].x,bot); ctx.closePath(); ctx.fillStyle=colorPfx+'0.08)'; ctx.fill(); ctx.beginPath(); pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.strokeStyle=colorPfx+'0.6)'; ctx.lineWidth=1.5; ctx.stroke(); pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,2.5,0,Math.PI*2); ctx.fillStyle=colorPfx+'0.8)'; ctx.fill(); }); ctx.fillStyle='rgba(80,60,50,0.5)'; ctx.font=`${Math.max(5,w*0.048)}px Arial`; ctx.textAlign='center'; pts.forEach((p,i)=>{ if(i%Math.ceil(n/4)===0||i===n-1) ctx.fillText(labels[i],p.x,bot+h*0.055); }); }
+
+function donutChart(cx,cy,w,h,title,labels,vals,colors){ chartFrame(cx,cy,w,h,title); const r=Math.min(w,h)*0.28,ir=r*0.55,ox=cx+w/2,oy=cy+h*0.58,total=vals.reduce((a,b)=>a+b,0); let angle=-Math.PI/2; vals.forEach((v,i)=>{ const slice=(v/total)*Math.PI*2; ctx.beginPath(); ctx.moveTo(ox,oy); ctx.arc(ox,oy,r,angle,angle+slice); ctx.closePath(); ctx.fillStyle=colors[i].replace(/[\d.]+\)$/,'0.65)'); ctx.fill(); ctx.beginPath(); ctx.arc(ox,oy,ir,0,Math.PI*2); ctx.fillStyle='rgba(255,252,248,0.9)'; ctx.fill(); angle+=slice; }); const lx=cx+w*0.08,lTop=cy+h*0.78,fs=Math.max(5.5,w*0.052); ctx.font=`${fs}px Arial`; labels.forEach((l,i)=>{ const lRow=lTop+i*(fs+3); ctx.fillStyle=colors[i].replace(/[\d.]+\)$/,'0.8)'); ctx.fillRect(lx,lRow-fs+2,fs-1,fs-1); ctx.fillStyle='rgba(60,48,40,0.6)'; ctx.textAlign='left'; ctx.fillText(`${l} (${vals[i]}%)`,lx+fs+2,lRow); }); }
+
+function draw(){ ctx.clearRect(0,0,W,H); const mxN=(mouse.x/W-0.5),myN=(mouse.y/H-0.5); charts.forEach(c=>{ const dx=mxN*c.depth*W,dy=myN*c.depth*H-scrollY*c.depth*4; c.draw(c.bx+dx,c.by+dy,c.w,c.h); }); requestAnimationFrame(draw); }
+draw();
+
+// FADE IN
+const obs = new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }); },{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
